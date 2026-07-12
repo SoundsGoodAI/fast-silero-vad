@@ -1,0 +1,6 @@
+Fast Silero VAD
+Copyright 2026 SoundsGood AI
+
+This project reconstructs and exports model weights from Silero VAD. Silero
+VAD is Copyright (c) 2020-present Silero Team and is distributed under the MIT
+License. See the Silero VAD MIT license distributed with this project.
