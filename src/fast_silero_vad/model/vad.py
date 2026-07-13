@@ -114,11 +114,7 @@ class VAD(torch.nn.Module):
             device=device,
         )
         self.depthwise_conv = torch.nn.Conv1d(
-            hidden_dim2,
-            1,
-            1,
-            dtype=torch.float32,
-            device=device,
+            hidden_dim2, 1, 1, dtype=torch.float32, device=device
         )
 
     def forward(
