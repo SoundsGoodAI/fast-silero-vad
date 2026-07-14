@@ -1,4 +1,4 @@
-#!/bin/env python3
+#!/usr/bin/env python3
 # Copyright SoundsGoodAI 2026 - Daniil Kulko
 """Package a Silero-compatible VAD model for runtime inference.
 
@@ -16,7 +16,7 @@ from pathlib import Path
 
 import torch
 
-from fast_silero_vad.constants import (
+from ..constants import (
     VAD_BRANCHES,
     VAD_CONFIG_FILE,
     VAD_CONVOLUTION_STRIDE,
@@ -24,10 +24,15 @@ from fast_silero_vad.constants import (
     VAD_ONNX_FILE,
     VAD_PACKAGING_LOG,
 )
-from fast_silero_vad.custom_op.build_vad_custom_op import build_vad_custom_op
-from fast_silero_vad.export.export_vad_onnx import export_vad_to_onnx
-from fast_silero_vad.model.vad import VAD
-from fast_silero_vad.utils import prepare_output_dir, prepare_vad_config, tar_model
+from ..utils import (
+    prepare_output_dir,
+    prepare_vad_config,
+    tar_model,
+    validate_model_dir,
+)
+from .custom_op.build_vad_custom_op import build_vad_custom_op
+from .export_vad_onnx import export_vad_to_onnx
+from .model.vad_model import VAD
 
 torch.set_num_threads(1)
 if torch.get_num_interop_threads() != 1:
@@ -147,7 +152,7 @@ def modify_state_dict(
 
     The Silero JIT bundle contains both _model and _model_8k branches.
     This function keeps tensors from the requested branch, drops the other
-    branch, and renames modules to match model.vad.vad.VAD.
+    branch, and renames modules to match export.model.vad_model.VAD.
 
     Parameters
     ----------
@@ -159,7 +164,7 @@ def modify_state_dict(
     Returns
     -------
     OrderedDict[str, torch.Tensor]
-        Converted VAD state dict compatible with model.vad.vad.VAD.
+        Converted VAD state dict compatible with export.model.vad_model.VAD.
 
     Raises
     ------
@@ -202,7 +207,7 @@ def infer_vad_params(
 
     The JIT checkpoint stores convolution weights but not module attributes such
     as stride, padding, or recurrent context length. The stored shapes are enough
-    to recover the Silero layout used by model.vad.vad.VAD:
+    to recover the Silero layout used by export.model.vad_model.VAD:
     the STFT kernel is half a VAD chunk, the right context is one eighth of a
     chunk, the model sample rate follows from Silero's 32 ms chunk duration,
     and the middle encoder convolutions downsample with the configured VAD
@@ -216,7 +221,7 @@ def infer_vad_params(
     Returns
     -------
     dict[str, int | torch.device]
-        Constructor parameters for model.vad.vad.VAD.
+        Constructor parameters for export.model.vad_model.VAD.
 
     Raises
     ------
@@ -398,6 +403,10 @@ def main(opts: Namespace) -> None:
     ):
         shutil.copyfile(licenses_dir / source_name, output_dir_path / output_name)
     logger.info("Copied license files.")
+
+    logger.info("Validating packaged model directory: %s.", output_dir_path)
+    validate_model_dir(str(output_dir_path))
+    logger.info("Validated packaged model directory.")
 
     tar_path = tar_model(output_dir_path)
     logger.info("Created model archive: %s.", tar_path)

@@ -222,8 +222,8 @@ def get_init_states(
         states shaped (1, hidden_dim).
     """
 
-    cached_left_pad = torch.zeros(1, left_cache_len, dtype=torch.float32, device=device)
+    left_context = torch.zeros(1, left_cache_len, dtype=torch.float32, device=device)
     h_state = torch.zeros(1, hidden_dim, dtype=torch.float32, device=device)
     c_state = torch.zeros(1, hidden_dim, dtype=torch.float32, device=device)
 
-    return cached_left_pad, h_state, c_state
+    return left_context, h_state, c_state

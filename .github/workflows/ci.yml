@@ -36,7 +36,7 @@ jobs:
         run: uv run --frozen ruff check .
 
       - name: Test
-        run: uv run --frozen pytest
+        run: uv run --frozen python -m pytest
 
       - name: Compile and load custom op
         run: |
@@ -45,7 +45,7 @@ jobs:
 
           import onnxruntime
 
-          from fast_silero_vad.custom_op.build_vad_custom_op import build_vad_custom_op
+          from fast_silero_vad.export.custom_op.build_vad_custom_op import build_vad_custom_op
 
           with tempfile.TemporaryDirectory() as output_dir:
               library_path = build_vad_custom_op(output_dir)

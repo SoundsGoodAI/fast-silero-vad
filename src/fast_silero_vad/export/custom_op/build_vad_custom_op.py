@@ -1,4 +1,4 @@
-#!/bin/env python3
+#!/usr/bin/env python3
 # Copyright SoundsGoodAI 2026 - Daniil Kulko
 """Build the ONNX Runtime custom frontend used by optimized VAD bundles."""
 
@@ -11,7 +11,7 @@ from urllib import request
 
 import onnxruntime
 
-from fast_silero_vad.constants import VAD_ORT_HEADER_PATHS
+from ...constants import VAD_ORT_HEADER_PATHS
 
 
 def download_onnxruntime_headers(include_root: Path, version: str) -> None:

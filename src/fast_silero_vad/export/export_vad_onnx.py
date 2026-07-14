@@ -1,4 +1,4 @@
-#!/bin/env python3
+#!/usr/bin/env python3
 # Copyright SoundsGoodAI 2026 - Daniil Kulko
 """
 ONNX export helpers for the standalone Silero-compatible VAD model.
@@ -17,7 +17,7 @@ import onnx
 import onnxruntime
 import torch
 
-from fast_silero_vad.constants import (
+from ..constants import (
     ONNX_OPSET_VERSION,
     VAD_CUSTOM_OP,
     VAD_CUSTOM_OP_DOMAIN,
@@ -25,8 +25,8 @@ from fast_silero_vad.constants import (
     VAD_ONNX_FILE,
     VAD_OUTPUT_NAMES,
 )
-from fast_silero_vad.model.vad import get_init_states
-from fast_silero_vad.utils import make_version_file
+from ..utils import make_version_file
+from .model.vad_model import get_init_states
 
 
 def export_vad_to_onnx(
@@ -141,13 +141,25 @@ def export_vad_to_onnx(
             Path(f"{workdir}/vad-no-custom-no-opt.onnx").unlink()
             Path(f"{workdir}/vad-custom-no-opt.onnx").unlink()
 
-        return
+    else:
+        onnxruntime.InferenceSession(
+            f"{workdir}/vad-no-opt.onnx",
+            session_opts,
+            providers=["CPUExecutionProvider"],
+        )
+        if not opts.debug:
+            Path(f"{workdir}/vad-no-opt.onnx").unlink()
 
-    onnxruntime.InferenceSession(
-        f"{workdir}/vad-no-opt.onnx", session_opts, providers=["CPUExecutionProvider"]
-    )
-    if not opts.debug:
-        Path(f"{workdir}/vad-no-opt.onnx").unlink()
+    model = onnx.load(workdir / VAD_ONNX_FILE)
+    for graph_output in model.graph.output:
+        if graph_output.name == "output_cached_left_context":
+            graph_output.type.tensor_type.shape.dim[0].dim_value = 1
+            graph_output.type.tensor_type.shape.dim[1].dim_value = vad_params[
+                "context_samples"
+            ]
+            break
+    onnx.checker.check_model(model)
+    onnx.save(model, workdir / VAD_ONNX_FILE)
 
 
 def get_verification_session(
@@ -169,9 +181,9 @@ def get_verification_session(
     """
 
     session_options = onnxruntime.SessionOptions()
+    session_options.log_severity_level = 4
     session_options.inter_op_num_threads = 1
     session_options.intra_op_num_threads = 1
-    session_options.log_severity_level = 4
     if custom_op_library_path is not None:
         session_options.register_custom_ops_library(custom_op_library_path)
     return onnxruntime.InferenceSession(
@@ -391,12 +403,5 @@ def replace_frontend_with_custom_op(
             ["num_chunks", vad_params["cutoff"], 4],
         )
     )
-    for graph_output in model.graph.output:
-        if graph_output.name == "output_cached_left_context":
-            graph_output.type.tensor_type.shape.dim[0].dim_value = 1
-            graph_output.type.tensor_type.shape.dim[1].dim_value = vad_params[
-                "context_samples"
-            ]
-
     onnx.checker.check_model(model)
     onnx.save(model, output_onnx_path)
