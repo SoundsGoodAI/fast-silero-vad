@@ -37,7 +37,7 @@ class VAD:
         self.is_offline = model_config.model_type != MODEL_TYPE_STREAMING_VAD
         self.engine = VADEngine(model_dir, model_config)
         self.segmenter = SpeechSegmenter(model_config)
-        self.timing = {"engine_sec": 0.0, "segmenter_sec": 0.0, "segments": 0}
+        self.timing = {"engine_sec": 0.0, "segmenter_sec": 0.0, "calls": 0}
 
     def reset(self) -> None:
         """Reset engine recurrent state, pending audio, and segmenter state."""
@@ -68,14 +68,17 @@ class VAD:
         self.engine.apply_samplerate(samplerate)
 
     def __call__(
-        self, audio: np.typing.NDArray[np.float32], final: bool = True
+        self,
+        audio: np.typing.NDArray[np.float32 | np.float64],
+        final: bool = True,
     ) -> list[dict[str, float]]:
         """Process one complete offline input or one streaming audio chunk.
 
         Parameters
         ----------
-        audio : np.typing.NDArray[np.float32]
-            One-dimensional float32 audio normalized to ``[-1.0, 1.0]``.
+        audio : np.typing.NDArray[np.float32 | np.float64]
+            One-dimensional floating-point audio normalized to ``[-1.0, 1.0]``.
+            Input is converted to float32 before inference.
         final : bool, default=True
             Whether no more audio will arrive for the current stream. Streaming
             bundles preserve state when false and reset after a final call.
@@ -108,7 +111,7 @@ class VAD:
         timer = perf_counter()
         segments = self.segmenter(probabilities, self.engine.total_samples, final)
         self.timing["segmenter_sec"] += perf_counter() - timer
-        self.timing["segments"] += 1
+        self.timing["calls"] += 1
 
         if final:
             self.reset()

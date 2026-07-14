@@ -28,7 +28,6 @@ class VAD(torch.nn.Module):
         encoder_kernel_size: int,
         encoder_stride: int,
         encoder_padding: int,
-        device: torch.device,
     ) -> None:
         """Initialize the reconstructed Silero VAD layers.
 
@@ -52,12 +51,11 @@ class VAD(torch.nn.Module):
             Stride used by the downsampling convolutional encoder layers.
         encoder_padding : int
             Padding used by all convolutional encoder layers.
-        device : torch.device
-            Device where model parameters are allocated.
         """
 
         super().__init__()
 
+        device = torch.device("cpu")
         self.chunk_samples = chunk_samples
         self.context_samples = context_samples
         self.cutoff = cutoff
@@ -152,8 +150,7 @@ class VAD(torch.nn.Module):
         ) % self.chunk_samples
 
         x = torch.cat(
-            (x, torch.zeros(1, pad_len, dtype=torch.float32, device=x.device)),
-            dim=1,
+            (x, torch.zeros(1, pad_len, dtype=torch.float32, device=x.device)), dim=1
         )
 
         num_chunks = x.size(1) // self.chunk_samples
@@ -162,8 +159,7 @@ class VAD(torch.nn.Module):
             :, :, self.chunk_samples - self.context_samples : self.chunk_samples
         ]
         contexts = torch.cat(
-            (left_context.unsqueeze(1), chunk_tails[:, : num_chunks - 1, :]),
-            dim=1,
+            (left_context.unsqueeze(1), chunk_tails[:, : num_chunks - 1, :]), dim=1
         )
         left_context = chunk_tails[:, num_chunks - 1 : num_chunks, :].squeeze(1)
 
@@ -200,9 +196,7 @@ class VAD(torch.nn.Module):
 
 
 def get_init_states(
-    left_cache_len: int,
-    hidden_dim: int,
-    device: torch.device,
+    left_cache_len: int, hidden_dim: int, device: torch.device
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     """Create initial waveform context and recurrent VAD states.
 

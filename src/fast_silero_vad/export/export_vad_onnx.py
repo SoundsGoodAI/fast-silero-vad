@@ -31,7 +31,7 @@ from .model.vad_model import get_init_states
 
 def export_vad_to_onnx(
     vad: torch.nn.Module,
-    vad_params: dict[str, int | torch.device],
+    vad_params: dict[str, int],
     opts: Namespace,
     workdir: Path,
     custom_op_library_path: str | None,
@@ -46,7 +46,7 @@ def export_vad_to_onnx(
     ----------
     vad : torch.nn.Module
         Exportable VAD module.
-    vad_params : dict[str, int | torch.device]
+    vad_params : dict[str, int]
         Constructor parameters inferred from the Silero checkpoint.
     opts : Namespace
         Parsed packaging options. The debug flag controls temporary-file
@@ -195,7 +195,7 @@ def verify_onnx_equivalence(
     reference_model_path: str | Path,
     candidate_model_path: str | Path,
     custom_op_library_path: str,
-    vad_params: dict[str, int | torch.device],
+    vad_params: dict[str, int],
 ) -> None:
     """Verify that a custom-frontend graph matches the standard ONNX graph.
 
@@ -211,7 +211,7 @@ def verify_onnx_equivalence(
         Optimized ONNX graph that uses the custom frontend.
     custom_op_library_path : str
         Shared library implementing the custom frontend operator.
-    vad_params : dict[str, int | torch.device]
+    vad_params : dict[str, int]
         Inferred model dimensions used to construct verification inputs.
     """
 
@@ -306,7 +306,7 @@ def get_producer_index(nodes: list[onnx.NodeProto], value_name: str) -> int:
 def replace_frontend_with_custom_op(
     input_onnx_path: str,
     output_onnx_path: str,
-    vad_params: dict[str, int | torch.device],
+    vad_params: dict[str, int],
 ) -> None:
     """Replace the exported Silero STFT/frontend subgraph with one custom op.
 
@@ -322,7 +322,7 @@ def replace_frontend_with_custom_op(
         Source ONNX graph after the first ONNX Runtime optimization pass.
     output_onnx_path : str
         Destination ONNX graph containing the custom frontend node.
-    vad_params : dict[str, int | torch.device]
+    vad_params : dict[str, int]
         VAD constructor parameters inferred from the Silero checkpoint. The
         frontend feature shape and cached-context shape are restored from these
         values after graph surgery.

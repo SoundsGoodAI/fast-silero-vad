@@ -202,7 +202,7 @@ def modify_state_dict(
 
 def infer_vad_params(
     model_state_dict: OrderedDict[str, torch.Tensor],
-) -> dict[str, int | torch.device]:
+) -> dict[str, int]:
     """Infer the local VAD constructor parameters from converted Silero weights.
 
     The JIT checkpoint stores convolution weights but not module attributes such
@@ -220,7 +220,7 @@ def infer_vad_params(
 
     Returns
     -------
-    dict[str, int | torch.device]
+    dict[str, int]
         Constructor parameters for export.model.vad_model.VAD.
 
     Raises
@@ -299,7 +299,6 @@ def infer_vad_params(
         "encoder_kernel_size": encoder_kernel_size,
         "encoder_stride": VAD_CONVOLUTION_STRIDE,
         "encoder_padding": encoder_kernel_size // 2,
-        "device": torch.device("cpu"),
     }
 
     return vad_params
