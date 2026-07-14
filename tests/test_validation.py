@@ -145,7 +145,7 @@ def test_validation_rejects_missing_config(tmp_path: Path) -> None:
     ],
 )
 def test_validation_rejects_invalid_config_values(
-    tmp_path: Path, field: str, value: str | int | float,
+    tmp_path: Path, field: str, value: str | int | float
 ) -> None:
     model_dir = _write_model_bundle(tmp_path)
     model_config_path = model_dir / VAD_CONFIG_FILE
