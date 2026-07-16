@@ -9,7 +9,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="Apache-2.0 license"></a>
 </p>
 
-**Fast Silero VAD** combines a streamlined ONNX graph with an optimized spectral frontend to reduce inference overhead and improve CPU throughput while preserving speech-probability outputs numerically equivalent to the original Silero VAD.
+**Fast Silero VAD** combines a streamlined ONNX graph with an optimized spectral frontend to significantly improve CPU throughput while producing speech probabilities that are numerically equivalent to the original model.
 
 <table>
   <tr>
@@ -18,14 +18,37 @@
     </th>
   </tr>
   <tr>
-    <td width="50%"><img src="docs/plots/duration_sweep_combined_rtfx.svg" width="100%" alt="RTFx by input duration on AMD EPYC 9655"></td>
-    <td width="50%"><img src="docs/plots/duration_sweep_combined_speedup.svg" width="100%" alt="Speedup by input duration on AMD EPYC 9655"></td>
+    <td width="50%"><img src="docs/plots/duration_sweep_combined_rtfx_amd.svg" width="100%" alt="RTFx by input duration on AMD EPYC 9655"></td>
+    <td width="50%"><img src="docs/plots/duration_sweep_combined_speedup_amd.svg" width="100%" alt="Speedup by input duration on AMD EPYC 9655"></td>
+  </tr>
+  <tr>
+    <th colspan="2">
+      <div align="center"><big>Apple M4 Max (single thread)</big></div>
+    </th>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/plots/duration_sweep_combined_rtfx_m4.svg" width="100%" alt="RTFx by input duration on Apple M4 Max"></td>
+    <td width="50%"><img src="docs/plots/duration_sweep_combined_speedup_m4.svg" width="100%" alt="Speedup by input duration on Apple M4 Max"></td>
   </tr>
 </table>
 
 **Solid lines** measure probability inference.
 **Dashed lines** include speech segmentation.
 **RTFx** is a ratio of processed audio duration to processing time.
+
+- The Fast RFFT engine rises from **561 RTFx** (**1.51x** speedup) at 32 ms
+  to **1,165 RTFx** (**2.98x** speedup) at 1024 ms.
+- Including the Numba-compiled Segmenter, the full Fast RFFT pipeline reaches
+  **532 RTFx** (**1.43x** speedup) at 32 ms and **1,162 RTFx** (**2.98x**
+  speedup) at 1024 ms.
+- The standard Fast ONNX graph reaches **755 RTFx** (**1.93x** speedup) at
+  1024 ms, while the full standard pipeline reaches **745 RTFx** (**1.91x**).
+  Both exceed the upstream C++ implementation from 64 ms onward.
+
+These measurements use deterministic synthetic 16 kHz mono audio on macOS
+26.5.1 with Python 3.14.5, ONNX Runtime 1.27.0, a `0.005` segmentation
+threshold, and one execution thread. Values are median latencies from 1,000
+runs after 50 warmups; model loading and WAV decoding are excluded.
 
 - The Fast RFFT Silero VAD engine rises from **657 RTFx** (**1.68x** speedup) at
   32 ms to **1,448 RTFx** (**3.17x** speedup) at 1024 ms.
@@ -186,26 +209,92 @@ provides a measurable improvement at that duration.
 
 ## Reproducing
 
-The benchmark tools are repository-only. Run the commands below from a project
-checkout after installing its dependencies with `uv`.
+The benchmark tools are repository-only. The commands below reproduce the
+Apple M4 Max sweep from a project checkout. They require `uv`, network access
+for the first export and C++ build, and a C++20 compiler named `c++`.
+
+All ONNX Runtime sessions use one inter-op and one intra-op thread. On Linux,
+prefix the timed Python and C++ commands with `taskset -c 0` to also pin them to
+one logical CPU. macOS does not provide `taskset`, so run the commands as shown.
+The checked-in Apple results use 1,000 timed runs after 50 warmups. The AMD EPYC
+results used the same sweep with 500 timed runs and Linux CPU affinity.
+
+### Setup
+
+Install the export and plotting dependencies and create the output directory:
+
+```bash
+uv sync --frozen --extra export --extra plot
+mkdir -p benchmarks/output/m4_max
+```
+
+Export one standard bundle and one custom-op RFFT bundle with matching model
+and segmenter settings:
+
+```bash
+uv run --frozen --extra export fast-silero-vad-export \
+  --output-dir-path models/benchmark_standard_16k \
+  --model-type offline_vad \
+  --vad-branch 16k \
+  --threshold 0.005 \
+  --min-speech-duration-ms 100 \
+  --max-speech-duration-ms 30000 \
+  --min-silence-duration-ms 1000 \
+  --speech-pad-ms 0
+
+uv run --frozen --extra export fast-silero-vad-export \
+  --output-dir-path models/benchmark_custom_op_16k \
+  --model-type offline_vad \
+  --vad-branch 16k \
+  --threshold 0.005 \
+  --min-speech-duration-ms 100 \
+  --max-speech-duration-ms 30000 \
+  --min-silence-duration-ms 1000 \
+  --speech-pad-ms 0 \
+  --use-onnxruntime-custom-op
+```
+
+The Python benchmark creates its deterministic synthetic signal in memory.
+The C++ harness requires a mono 16-bit PCM WAV, so create the equivalent
+1.024-second, 16 kHz input:
+
+```bash
+uv run --frozen --extra export python - <<'PY'
+import wave
+from pathlib import Path
+
+import numpy as np
+
+from benchmarks.utils import make_synthetic_audio
+
+output_path = Path("benchmarks/output/m4_max/synthetic_1024ms.wav")
+audio = make_synthetic_audio(1.024, 16000)
+pcm = np.clip(audio * (2**15 - 1), -32768, 32767).astype("<i2")
+
+with wave.open(str(output_path), "wb") as output:
+    output.setnchannels(1)
+    output.setsampwidth(2)
+    output.setframerate(16000)
+    output.writeframes(pcm.tobytes())
+PY
+```
 
 ### Python
 
 ```bash
-taskset -c 0 uv run --frozen --extra export python -m benchmarks.duration_sweep \
-  --standard-model-dir /path/to/standard_bundle \
-  --custom-op-model-dir /path/to/custom_op_bundle \
-  --wav-path /path/to/audio.wav \
-  --wav-offset-sec 0 \
+uv run --frozen --extra export python -m benchmarks.duration_sweep \
+  --standard-model-dir models/benchmark_standard_16k \
+  --custom-op-model-dir models/benchmark_custom_op_16k \
   --durations-ms 32 64 128 256 512 1024 \
+  --samplerate 16000 \
   --threshold 0.005 \
   --min-speech-duration-ms 100 \
   --max-speech-duration-ms 30000 \
   --min-silence-duration-ms 1000 \
   --speech-pad-ms 0 \
   --warmup 50 \
-  --repeats 500 \
-  --output-tsv-path benchmarks/results/python.tsv
+  --repeats 1000 \
+  --output-tsv-path benchmarks/output/m4_max/python.tsv
 ```
 
 ### C++
@@ -217,13 +306,18 @@ are downloaded from the corresponding ONNX Runtime tag when absent from the
 local cache.
 
 ```bash
-uv run --frozen python benchmarks/cpp/build.py
+uv run --frozen --extra export python benchmarks/cpp/build.py
 
-taskset -c 0 benchmarks/cpp/build/vad_benchmark \
-  /path/to/silero_vad.onnx \
-  benchmarks/results/cpp.tsv \
-  50 500 \
-  /path/to/audio.wav \
+OFFICIAL_ONNX="$(
+  uv run --frozen --extra export python -c \
+    'from pathlib import Path; import silero_vad; print(Path(silero_vad.__file__).resolve().parent / "data" / "silero_vad.onnx")'
+)"
+
+benchmarks/cpp/build/vad_benchmark \
+  "$OFFICIAL_ONNX" \
+  benchmarks/output/m4_max/cpp.tsv \
+  50 1000 \
+  benchmarks/output/m4_max/synthetic_1024ms.wav \
   0 \
   32 64 128 256 512 1024
 ```
@@ -232,7 +326,9 @@ taskset -c 0 benchmarks/cpp/build/vad_benchmark \
 
 ```bash
 uv run --frozen --extra plot python -m benchmarks.plot_benchmark \
-  --input-tsv-path benchmarks/results/python.tsv benchmarks/results/cpp.tsv \
-  --output-dir-path docs/plots \
+  --input-tsv-path \
+    benchmarks/output/m4_max/python.tsv \
+    benchmarks/output/m4_max/cpp.tsv \
+  --output-dir-path docs/plots/m4_max \
   --formats svg
 ```

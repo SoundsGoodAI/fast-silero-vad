@@ -12,13 +12,13 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
-from urllib import request
 
 import onnxruntime
 
 from fast_silero_vad.constants import VAD_ORT_HEADER_PATHS
 from fast_silero_vad.export.custom_op.build_vad_custom_op import (
     download_onnxruntime_headers,
+    download_url,
 )
 
 SILERO_VAD_REVISION = "b163605b3f44c3aadf28f97b125a2f7c461e9a7f"
@@ -58,7 +58,7 @@ def download_silero_vad_cpp(source_dir: Path) -> None:
                 "https://raw.githubusercontent.com/snakers4/silero-vad/"
                 f"{SILERO_VAD_REVISION}/examples/c%2B%2B/{filename}"
             )
-            request.urlretrieve(url, temporary_source_dir / filename)
+            download_url(url, temporary_source_dir / filename)
         for filename in missing_files:
             shutil.copy2(temporary_source_dir / filename, source_dir / filename)
 

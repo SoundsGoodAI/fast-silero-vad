@@ -29,6 +29,7 @@ dependencies = [
 
 [project.optional-dependencies]
 export = [
+    "certifi>=2026.6.17",
     "onnx>=1.22.0,<2.0.0",
     "silero-vad>=6.2",
     "torch>=2.13.0,<3.0.0",

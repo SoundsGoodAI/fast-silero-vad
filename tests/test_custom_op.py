@@ -1,5 +1,6 @@
 """Tests for platform-independent custom-op build preparation."""
 
+from io import BytesIO
 from pathlib import Path
 
 import pytest
@@ -68,7 +69,7 @@ def test_download_onnxruntime_headers_uses_versioned_source(
         urls.append(url)
         output_path.write_text(url, encoding="utf8")
 
-    monkeypatch.setattr(build_vad_custom_op.request, "urlretrieve", download)
+    monkeypatch.setattr(build_vad_custom_op, "download_url", download)
     include_root = tmp_path / "include"
     build_vad_custom_op.download_onnxruntime_headers(include_root, "1.27.0")
 
@@ -80,3 +81,34 @@ def test_download_onnxruntime_headers_uses_versioned_source(
         for path in VAD_ORT_HEADER_PATHS
     ]
     assert all((include_root / path).is_file() for path in VAD_ORT_HEADER_PATHS)
+
+
+def test_download_url_uses_certifi_ca_bundle(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    context = object()
+    cafiles = []
+    requests = []
+
+    def create_default_context(*, cafile: str) -> object:
+        cafiles.append(cafile)
+        return context
+
+    def open_url(url: str, *, context: object) -> BytesIO:
+        requests.append((url, context))
+        return BytesIO(b"header")
+
+    monkeypatch.setattr(
+        build_vad_custom_op.certifi, "where", lambda: "/certifi/cacert.pem"
+    )
+    monkeypatch.setattr(
+        build_vad_custom_op.ssl, "create_default_context", create_default_context
+    )
+    monkeypatch.setattr(build_vad_custom_op.request, "urlopen", open_url)
+
+    output_path = tmp_path / "header.h"
+    build_vad_custom_op.download_url("https://example.com/header.h", output_path)
+
+    assert cafiles == ["/certifi/cacert.pem"]
+    assert requests == [("https://example.com/header.h", context)]
+    assert output_path.read_bytes() == b"header"

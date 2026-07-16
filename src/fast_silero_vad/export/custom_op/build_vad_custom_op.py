@@ -3,15 +3,29 @@
 """Build the ONNX Runtime custom frontend used by optimized VAD bundles."""
 
 import shutil
+import ssl
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
 from urllib import request
 
+import certifi
 import onnxruntime
 
 from ...constants import VAD_ORT_HEADER_PATHS
+
+
+def download_url(url: str, output_path: Path) -> None:
+    """Download ``url`` to ``output_path`` using an explicit CA bundle."""
+
+    with (
+        request.urlopen(
+            url, context=ssl.create_default_context(cafile=certifi.where())
+        ) as response,
+        open(output_path, "wb") as output_file,
+    ):
+        shutil.copyfileobj(response, output_file)
 
 
 def download_onnxruntime_headers(include_root: Path, version: str) -> None:
@@ -41,7 +55,7 @@ def download_onnxruntime_headers(include_root: Path, version: str) -> None:
                 "https://raw.githubusercontent.com/microsoft/onnxruntime/"
                 f"v{version}/include/{header_path}"
             )
-            request.urlretrieve(header_url, temporary_header_path)
+            download_url(header_url, temporary_header_path)
 
         for header_path in VAD_ORT_HEADER_PATHS:
             output_path = include_root / header_path
