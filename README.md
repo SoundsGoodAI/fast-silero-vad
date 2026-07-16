@@ -23,19 +23,19 @@
   </tr>
 </table>
 
-<small>
-<strong>Solid lines</strong> measure probability inference.
-<strong>Dashed lines</strong> include speech segmentation.
-<strong>RTFx</strong> is a ratio of processed audio duration to processing time.<br><br>
-</small>
+**Solid lines** measure probability inference.
+**Dashed lines** include speech segmentation.
+**RTFx** is a ratio of processed audio duration to processing time.
 
 - The Fast RFFT Silero VAD engine rises from **657 RTFx** (**1.68x** speedup) at
   32 ms to **1,448 RTFx** (**3.17x** speedup) at 1024 ms.
 - With the Numba-compiled Segmenter included, the full Fast RFFT pipeline reaches
   **593 RTFx** (**1.51x** speedup) at 32 ms and **1,438 RTFx** (**3.15x**
   speedup) at 1024 ms.
-- The standard Fast Silero VAD graph reaches **2.51x** speedup at 1024 ms; the
-  full pipeline with Segmenter reaches **2.49x**.
+- Even without RFFT optimization, the standard Fast Silero VAD graph reaches
+  **2.51x** speedup at 1024 ms; the full pipeline with Segmenter reaches
+  **2.49x**. Both outperform the upstream C++ Silero ONNX implementation from
+  64 ms onward.
 - Official Python and C++ Silero VAD settle into approximately constant throughput as
   input duration grows.
 
