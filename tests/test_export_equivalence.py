@@ -44,6 +44,16 @@ def silero_vad_jit_path(pytestconfig: pytest.Config) -> Path:
     return model_path
 
 
+def test_default_model_path_uses_installed_silero_package() -> None:
+    """Resolve the same checkpoint bundled with the official package."""
+
+    expected_path = _get_packaged_silero_vad_jit_path()
+    pytest.importorskip("torch", reason="Install the export extra.")
+    from fast_silero_vad.export.package_model import get_silero_vad_jit_path
+
+    assert get_silero_vad_jit_path() == expected_path
+
+
 @pytest.mark.parametrize(
     ("vad_branch", "use_custom_op"),
     (

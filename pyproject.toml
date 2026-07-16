@@ -45,8 +45,6 @@ plot = [
 [project.scripts]
 fast-silero-vad = "fast_silero_vad.detect:main"
 fast-silero-vad-export = "fast_silero_vad.export.package_model:main_cli"
-fast-silero-vad-benchmark = "fast_silero_vad.benchmark.benchmark:main"
-fast-silero-vad-plot-benchmark = "fast_silero_vad.benchmark.plot_benchmark:main"
 
 [project.urls]
 Homepage = "https://github.com/SoundsGoodAI/fast-silero-vad"

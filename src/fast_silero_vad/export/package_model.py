@@ -12,6 +12,7 @@ import shutil
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser, Namespace
 from collections import OrderedDict
 from hashlib import file_digest
+from importlib.util import find_spec
 from pathlib import Path
 
 import torch
@@ -77,8 +78,10 @@ def parse_args() -> Namespace:
     parser.add_argument(
         "--model-path",
         type=str,
-        required=True,
-        help="Path to the original Silero VAD JIT checkpoint.",
+        help=(
+            "Path to the original Silero VAD JIT checkpoint. Defaults to the "
+            "checkpoint bundled with the installed silero-vad package."
+        ),
     )
     parser.add_argument(
         "--output-dir-path",
@@ -143,6 +146,34 @@ def parse_args() -> Namespace:
         help="Keep intermediate ONNX files.",
     )
     return parser.parse_args()
+
+
+def get_silero_vad_jit_path() -> Path:
+    """Locate the JIT checkpoint bundled with the official Silero VAD package.
+
+    Returns
+    -------
+    Path
+        Path to ``silero_vad/data/silero_vad.jit``.
+
+    Raises
+    ------
+    FileNotFoundError
+        If ``silero-vad`` is not installed or does not contain the checkpoint.
+    """
+
+    spec = find_spec("silero_vad")
+    if spec is None or spec.origin is None:
+        raise FileNotFoundError(
+            "Could not locate the silero-vad package. Install the export dependencies."
+        )
+
+    model_path = Path(spec.origin).resolve().parent / "data" / "silero_vad.jit"
+    if not model_path.is_file():
+        raise FileNotFoundError(
+            f"The silero-vad package does not contain {model_path}."
+        )
+    return model_path
 
 
 def modify_state_dict(
@@ -336,7 +367,7 @@ def main(opts: Namespace) -> None:
     if opts.debug:
         logger.info("Debug mode is enabled; intermediate ONNX graphs will be kept.")
 
-    model_path = Path(opts.model_path)
+    model_path = Path(opts.model_path) if opts.model_path else get_silero_vad_jit_path()
     logger.info("Hashing source checkpoint: %s.", model_path)
     with open(model_path, "rb") as model_file:
         opts.source_model_sha256 = file_digest(model_file, "sha256").hexdigest()

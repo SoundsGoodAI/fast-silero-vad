@@ -92,11 +92,11 @@ def get_onnxruntime_session(
         Session, input names, output names, input shapes, and output shapes.
     """
 
+    onnxruntime.set_default_logger_severity(4)
     session_opts = onnxruntime.SessionOptions()
     session_opts.log_severity_level = 4
     session_opts.inter_op_num_threads = 1
     session_opts.intra_op_num_threads = 1
-    onnxruntime.set_default_logger_severity(4)
 
     model_dir_path = Path(onnx_model_path).parent
     custom_op_library = model_config.get("onnx_custom_op")

@@ -27,7 +27,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: uv sync --frozen --extra dev
+        run: uv sync --frozen --extra dev --extra export
 
       - name: Check formatting
         run: uv run --frozen ruff format --check .
@@ -47,6 +47,8 @@ jobs:
 
           from fast_silero_vad.export.custom_op.build_vad_custom_op import build_vad_custom_op
 
+          onnxruntime.set_default_logger_severity(3)
+
           with tempfile.TemporaryDirectory() as output_dir:
               library_path = build_vad_custom_op(output_dir)
               options = onnxruntime.SessionOptions()
@@ -55,7 +57,7 @@ jobs:
 
       - name: Verify exports against Silero VAD >=6.2
         run: |
-          uv run --frozen --extra dev --extra export python -m pytest \
+          uv run --frozen python -m pytest \
             --download-silero-vad \
             tests/test_export_equivalence.py
 
