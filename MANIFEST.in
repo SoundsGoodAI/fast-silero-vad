@@ -1,0 +1,3 @@
+recursive-include benchmarks *.cc *.py
+recursive-include docs/plots *.svg
+recursive-include tests *.py
