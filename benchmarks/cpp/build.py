@@ -143,7 +143,7 @@ def main() -> None:
     if compiler is None:
         raise RuntimeError("Cannot find a C++ compiler named `c++`.")
 
-    source_path = Path(__file__).with_name("benchmark.cpp")
+    source_path = Path(__file__).with_name("benchmark.cc")
     output_path = Path(args.output_path).resolve()
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
