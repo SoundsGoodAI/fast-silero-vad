@@ -16,22 +16,28 @@ speech probabilities.
 ## Benchmarks
 
 <table>
-  <tr>
-    <th>
-      <div align="center"><big>Apple M4 Max (single thread)</big></div>
-    </th>
-    <th>
-      <div align="center"><big>AMD EPYC 9655 (single thread)</big></div>
-    </th>
-  </tr>
-  <tr>
-    <td width="50%"><img src="docs/plots/duration_sweep_combined_speedup_m4.svg" width="100%" alt="Speedup by input duration on Apple M4 Max"></td>
-    <td width="50%"><img src="docs/plots/duration_sweep_combined_speedup_amd.svg" width="100%" alt="Speedup by input duration on AMD EPYC 9655"></td>
-  </tr>
-  <tr>
-    <td width="50%"><img src="docs/plots/duration_sweep_combined_rtfx_m4.svg" width="100%" alt="RTFx by input duration on Apple M4 Max"></td>
-    <td width="50%"><img src="docs/plots/duration_sweep_combined_rtfx_amd.svg" width="100%" alt="RTFx by input duration on AMD EPYC 9655"></td>
-  </tr>
+  <thead>
+    <tr>
+      <th>
+        <div align="center"><big>Apple M4 Max (single thread)</big></div>
+      </th>
+      <th>
+        <div align="center"><big>AMD EPYC 9655 (single thread)</big></div>
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td width="50%"><img src="docs/plots/duration_sweep_combined_speedup_m4.svg" width="100%" alt="Speedup by input duration on Apple M4 Max"></td>
+      <td width="50%"><img src="docs/plots/duration_sweep_combined_speedup_amd.svg" width="100%" alt="Speedup by input duration on AMD EPYC 9655"></td>
+    </tr>
+  </tbody>
+  <tbody>
+    <tr>
+      <td width="50%"><img src="docs/plots/duration_sweep_combined_rtfx_m4.svg" width="100%" alt="RTFx by input duration on Apple M4 Max"></td>
+      <td width="50%"><img src="docs/plots/duration_sweep_combined_rtfx_amd.svg" width="100%" alt="RTFx by input duration on AMD EPYC 9655"></td>
+    </tr>
+  </tbody>
 </table>
 
 **Solid lines** measure probability inference.
