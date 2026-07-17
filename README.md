@@ -58,10 +58,10 @@ speech probabilities.
   adds another 26% on AMD and 54% on M4 over the standard Fast ONNX graph at
   1024 ms.
 - **The full VAD inference with segmentation keeps the gain.** The complete
-  RFFT pipeline with `Numba`-optimized segmentation reaches **1,438 RTFx** on
-  AMD and **1,162 RTFx** on M4, only 0.7% and 0.3% below probability inference
-  alone. It delivers **3.15x** and **2.98x** the throughput of official Python
-  Silero VAD, and **2.52x** and **2.66x** that of the official Silero VAD C++
+  RFFT pipeline with `Numba`-optimized segmentation reaches 1,438 RTFx on
+  AMD and 1,162 RTFx on M4, only 0.7% and 0.3% below probability inference
+  alone. It delivers 3.15x and 2.98x the throughput of official Python
+  Silero VAD, and 2.52x and 2.66x that of the official Silero VAD C++
   implementation.
 
 Measurements use deterministic 16 kHz mono audio, one ONNX Runtime thread, and
