@@ -2,11 +2,12 @@
 
 <p>
   <a href="https://github.com/SoundsGoodAI/fast-silero-vad/actions/workflows/ci.yml"><img src="https://github.com/SoundsGoodAI/fast-silero-vad/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
+  <a href="https://pypi.org/project/fast-silero-vad/"><img src="https://img.shields.io/pypi/v/fast-silero-vad" alt="PyPI version"></a>
   <img src="https://img.shields.io/badge/Python-3.12%20%7C%203.13%20%7C%203.14-3776AB?logo=python&amp;logoColor=white" alt="Python 3.12, 3.13, and 3.14">
   <img src="https://img.shields.io/badge/platform-Linux%20%7C%20macOS-4C566A" alt="Linux and macOS">
   <img src="https://img.shields.io/badge/typing-typed-2F80ED" alt="Typed Python package">
   <a href="https://docs.astral.sh/ruff/"><img src="https://img.shields.io/badge/lint-Ruff-261230?logo=ruff&amp;logoColor=white" alt="Linted with Ruff"></a>
-  <a href="https://github.com/SoundsGoodAI/fast-silero-vad/blob/v0.1.1/LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="Apache-2.0 license"></a>
+  <a href="https://github.com/SoundsGoodAI/fast-silero-vad/blob/v0.1.2/LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="Apache-2.0 license"></a>
 </p>
 
 **Fast Silero VAD** combines a streamlined ONNX graph with an optimized spectral
@@ -28,14 +29,14 @@ speech probabilities.
   </thead>
   <tbody>
     <tr>
-      <td width="50%"><img src="https://raw.githubusercontent.com/SoundsGoodAI/fast-silero-vad/v0.1.1/docs/plots/duration_sweep_combined_speedup_m4.svg" width="100%" alt="Speedup by input duration on Apple M4 Max"></td>
-      <td width="50%"><img src="https://raw.githubusercontent.com/SoundsGoodAI/fast-silero-vad/v0.1.1/docs/plots/duration_sweep_combined_speedup_amd.svg" width="100%" alt="Speedup by input duration on AMD EPYC 9655"></td>
+      <td width="50%"><img src="https://raw.githubusercontent.com/SoundsGoodAI/fast-silero-vad/v0.1.2/docs/plots/duration_sweep_combined_speedup_m4.svg" width="100%" alt="Speedup by input duration on Apple M4 Max"></td>
+      <td width="50%"><img src="https://raw.githubusercontent.com/SoundsGoodAI/fast-silero-vad/v0.1.2/docs/plots/duration_sweep_combined_speedup_amd.svg" width="100%" alt="Speedup by input duration on AMD EPYC 9655"></td>
     </tr>
   </tbody>
   <tbody>
     <tr>
-      <td width="50%"><img src="https://raw.githubusercontent.com/SoundsGoodAI/fast-silero-vad/v0.1.1/docs/plots/duration_sweep_combined_rtfx_m4.svg" width="100%" alt="RTFx by input duration on Apple M4 Max"></td>
-      <td width="50%"><img src="https://raw.githubusercontent.com/SoundsGoodAI/fast-silero-vad/v0.1.1/docs/plots/duration_sweep_combined_rtfx_amd.svg" width="100%" alt="RTFx by input duration on AMD EPYC 9655"></td>
+      <td width="50%"><img src="https://raw.githubusercontent.com/SoundsGoodAI/fast-silero-vad/v0.1.2/docs/plots/duration_sweep_combined_rtfx_m4.svg" width="100%" alt="RTFx by input duration on Apple M4 Max"></td>
+      <td width="50%"><img src="https://raw.githubusercontent.com/SoundsGoodAI/fast-silero-vad/v0.1.2/docs/plots/duration_sweep_combined_rtfx_amd.svg" width="100%" alt="RTFx by input duration on AMD EPYC 9655"></td>
     </tr>
   </tbody>
 </table>
@@ -75,12 +76,10 @@ implementation compiled with C++20, `-O3`, and `-DNDEBUG`.
 
 ## Quick Start
 
-Install [`uv`](https://docs.astral.sh/uv/getting-started/installation/) and the
-export dependencies:
+Install Fast Silero VAD with the export dependencies:
 
 ```bash
-pip install uv
-uv sync --extra export
+pip install "fast-silero-vad[export]"
 ```
 
 The RFFT export requires a C++20 compiler available as `c++` and network access
@@ -91,7 +90,7 @@ on the first run.
 Export a 16 kHz offline bundle with the optimized RFFT frontend:
 
 ```bash
-uv run --extra export fast-silero-vad-export \
+fast-silero-vad-export \
   --output-dir-path models/fast_silero_vad_16k \
   --model-type offline_vad \
   --vad-branch 16k \
@@ -103,15 +102,15 @@ uv run --extra export fast-silero-vad-export \
   --use-onnxruntime-custom-op
 ```
 
-The exporter uses the JIT checkpoint bundled with `silero-vad` and writes the
-runtime and segmenter settings to `model_config.yaml`. For streaming, use a new
-output directory and `--model-type streaming_vad`. Use `--vad-branch 8k` to
-export an 8 kHz bundle.
+The exporter uses the JIT checkpoint bundled with `silero-vad>=6.2.1` and
+writes the runtime and segmenter settings to `model_config.yaml`. For streaming,
+use a new output directory and `--model-type streaming_vad`. Use
+`--vad-branch 8k` to export an 8 kHz bundle.
 
 ### CLI
 
 ```bash
-uv run fast-silero-vad \
+fast-silero-vad \
   --model-dir models/fast_silero_vad_16k \
   --wav-dir /path/to/wav/files \
   --output-path segments.tsv
@@ -173,20 +172,22 @@ speedup comes from the real FFT frontend.
 ## Numerical Equivalence
 
 Numerically equivalent means float32-close, not bit-identical. The
-[`export equivalence tests`](https://github.com/SoundsGoodAI/fast-silero-vad/blob/v0.1.1/tests/test_export_equivalence.py) run 12 seeded PCM
+[`export equivalence tests`](https://github.com/SoundsGoodAI/fast-silero-vad/blob/v0.1.2/tests/test_export_equivalence.py) run 12 seeded PCM
 chunks statefully through the original Silero JIT checkpoint and through both
 standard and real FFT exports at 8 kHz and 16 kHz. Every speech probability must
 match within `rtol=1e-4` and `atol=1e-6`.
 
 ## Reproducing
 
-These commands reproduce the duration sweep. They require `uv`, a C++20 compiler
+These commands reproduce the duration sweep. They require
+[`uv`](https://docs.astral.sh/uv/getting-started/installation/), a C++20 compiler
 named `c++`, and network access on the first run. ONNX Runtime is limited to one
 thread.
 
 ### Setup
 
 ```bash
+pip install uv
 uv sync --frozen --extra export --extra plot
 mkdir -p benchmarks/output/m4_max
 
@@ -281,3 +282,13 @@ uv run --frozen --extra plot python -m benchmarks.plot_benchmark \
   --output-dir-path docs/plots/m4_max \
   --formats svg
 ```
+
+## License
+
+Fast Silero VAD source code is licensed under
+[Apache-2.0](https://github.com/SoundsGoodAI/fast-silero-vad/blob/v0.1.2/LICENSE).
+Exported model weights are derived from Silero VAD and remain subject to the
+[Silero VAD MIT License](https://github.com/SoundsGoodAI/fast-silero-vad/blob/v0.1.2/src/fast_silero_vad/licenses/SILERO-VAD-MIT.txt).
+This project is independent and is not affiliated with or endorsed by the
+Silero Team. See the project
+[NOTICE](https://github.com/SoundsGoodAI/fast-silero-vad/blob/v0.1.2/NOTICE).

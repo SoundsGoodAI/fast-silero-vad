@@ -55,7 +55,7 @@ jobs:
               options.register_custom_ops_library(library_path)
           PY
 
-      - name: Verify exports against Silero VAD >=6.2
+      - name: Verify exports against Silero VAD >=6.2.1
         run: |
           uv run --frozen python -m pytest \
             --download-silero-vad \

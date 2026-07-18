@@ -104,7 +104,7 @@ wheels = [
 
 [[package]]
 name = "fast-silero-vad"
-version = "0.1.1"
+version = "0.1.2"
 source = { editable = "." }
 dependencies = [
     { name = "audioop-lts", marker = "python_full_version >= '3.13'" },
@@ -144,7 +144,7 @@ requires-dist = [
     { name = "plotly", marker = "extra == 'plot'", specifier = ">=6.9.0,<7.0.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=9.1.1,<10.0.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.15.0,<1.0.0" },
-    { name = "silero-vad", marker = "extra == 'export'", specifier = ">=6.2" },
+    { name = "silero-vad", marker = "extra == 'export'", specifier = ">=6.2.1" },
     { name = "torch", marker = "extra == 'export'", specifier = ">=2.13.0,<3.0.0", index = "https://download.pytorch.org/whl/cpu" },
 ]
 provides-extras = ["export", "dev", "plot"]
