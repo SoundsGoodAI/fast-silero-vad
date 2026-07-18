@@ -6,7 +6,7 @@
   <img src="https://img.shields.io/badge/platform-Linux%20%7C%20macOS-4C566A" alt="Linux and macOS">
   <img src="https://img.shields.io/badge/typing-typed-2F80ED" alt="Typed Python package">
   <a href="https://docs.astral.sh/ruff/"><img src="https://img.shields.io/badge/lint-Ruff-261230?logo=ruff&amp;logoColor=white" alt="Linted with Ruff"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="Apache-2.0 license"></a>
+  <a href="https://github.com/SoundsGoodAI/fast-silero-vad/blob/v0.1.1/LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="Apache-2.0 license"></a>
 </p>
 
 **Fast Silero VAD** combines a streamlined ONNX graph with an optimized spectral
@@ -28,14 +28,14 @@ speech probabilities.
   </thead>
   <tbody>
     <tr>
-      <td width="50%"><img src="docs/plots/duration_sweep_combined_speedup_m4.svg" width="100%" alt="Speedup by input duration on Apple M4 Max"></td>
-      <td width="50%"><img src="docs/plots/duration_sweep_combined_speedup_amd.svg" width="100%" alt="Speedup by input duration on AMD EPYC 9655"></td>
+      <td width="50%"><img src="https://raw.githubusercontent.com/SoundsGoodAI/fast-silero-vad/v0.1.1/docs/plots/duration_sweep_combined_speedup_m4.svg" width="100%" alt="Speedup by input duration on Apple M4 Max"></td>
+      <td width="50%"><img src="https://raw.githubusercontent.com/SoundsGoodAI/fast-silero-vad/v0.1.1/docs/plots/duration_sweep_combined_speedup_amd.svg" width="100%" alt="Speedup by input duration on AMD EPYC 9655"></td>
     </tr>
   </tbody>
   <tbody>
     <tr>
-      <td width="50%"><img src="docs/plots/duration_sweep_combined_rtfx_m4.svg" width="100%" alt="RTFx by input duration on Apple M4 Max"></td>
-      <td width="50%"><img src="docs/plots/duration_sweep_combined_rtfx_amd.svg" width="100%" alt="RTFx by input duration on AMD EPYC 9655"></td>
+      <td width="50%"><img src="https://raw.githubusercontent.com/SoundsGoodAI/fast-silero-vad/v0.1.1/docs/plots/duration_sweep_combined_rtfx_m4.svg" width="100%" alt="RTFx by input duration on Apple M4 Max"></td>
+      <td width="50%"><img src="https://raw.githubusercontent.com/SoundsGoodAI/fast-silero-vad/v0.1.1/docs/plots/duration_sweep_combined_rtfx_amd.svg" width="100%" alt="RTFx by input duration on AMD EPYC 9655"></td>
     </tr>
   </tbody>
 </table>
@@ -173,7 +173,7 @@ speedup comes from the real FFT frontend.
 ## Numerical Equivalence
 
 Numerically equivalent means float32-close, not bit-identical. The
-[`export equivalence tests`](tests/test_export_equivalence.py) run 12 seeded PCM
+[`export equivalence tests`](https://github.com/SoundsGoodAI/fast-silero-vad/blob/v0.1.1/tests/test_export_equivalence.py) run 12 seeded PCM
 chunks statefully through the original Silero JIT checkpoint and through both
 standard and real FFT exports at 8 kHz and 16 kHz. Every speech probability must
 match within `rtol=1e-4` and `atol=1e-6`.

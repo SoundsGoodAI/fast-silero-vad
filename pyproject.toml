@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fast-silero-vad"
-version = "0.1.0"
+version = "0.1.1"
 description = "CPU-optimized Silero-compatible VAD runtime and exporter."
 readme = "README.md"
 requires-python = ">=3.12,<3.15"
